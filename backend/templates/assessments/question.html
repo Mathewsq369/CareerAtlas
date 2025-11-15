@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Assessment - Question {{ question_number }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .progress-bar {
+        transition: width 0.3s ease;
+    }
+    .answer-option {
+        transition: all 0.2s ease;
+    }
+    .answer-option:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-4xl mx-auto">
+        <!-- Progress Bar -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-sm font-medium text-blue-800">Assessment Progress</span>
+                <span class="text-sm font-medium text-blue-800" id="progress-text">0%</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-3">
+                <div id="progress-bar" class="bg-blue-600 h-3 rounded-full progress-bar" style="width: 0%"></div>
+            </div>
+        </div>
+
+        <!-- Question Card -->
+        <div id="question-container" class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <div class="text-center">
+                <h2 id="question-text" class="text-xl font-semibold mb-6 text-gray-800">Loading question...</h2>
+                
+                <!-- Answer Options -->
+                <div id="answer-options" class="space-y-3 max-w-2xl mx-auto">
+                    <!-- Options will be loaded here by JavaScript -->
+                </div>
+
+                <!-- Navigation -->
+                <div class="mt-8 flex justify-between">
+                    <button id="prev-btn" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg transition duration-300 opacity-50 cursor-not-allowed" disabled>
+                        Previous
+                    </button>
+                    <button id="next-btn" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition duration-300">
+                        Next Question
+                    </button>
+                    <button id="finish-btn" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg transition duration-300 hidden">
+                        Finish Assessment
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading Spinner -->
+        <div id="loading-spinner" class="text-center py-12">
+            <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            <p class="mt-4 text-gray-600">Loading assessment...</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const ASSESSMENT_API_URLS = {
+        questions: "{% url 'question-list' %}",
+        session: "{% url 'assessments:assessment-session-detail' session.id %}",
+        submitResponse: "{% url 'assessments:assessment-session-submit-response' session.id %}",
+        completeAssessment: "{% url 'assessments:assessment-session-complete-assessment' session.id %}"
+    };
+</script>
+<script src="{% static 'js/assessment.js' %}"></script>
+{% endblock %}
