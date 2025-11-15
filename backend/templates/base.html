@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}EduPersona Kenya - Career Guidance System{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- Navigation -->
+    <nav class="bg-blue-800 text-white shadow-lg">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-2">
+                    <i class="fas fa-graduation-cap text-2xl"></i>
+                    <span class="text-xl font-bold">EduPersona Kenya</span>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'dashboard' %}" class="hover:text-blue-200">Dashboard</a>
+                        <a href="{% url 'assessment-start' %}" class="hover:text-blue-200">Assessment</a>
+                        <a href="{% url 'recommendations' %}" class="hover:text-blue-200">Careers</a>
+                        <a href="{% url 'ai-coach' %}" class="hover:text-blue-200">AI Coach</a>
+                        <a href="{% url 'logout' %}" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded">Logout</a>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="hover:text-blue-200">Login</a>
+                        <a href="{% url 'register' %}" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded">Register</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8 mt-12">
+        <div class="container mx-auto px-4 text-center">
+            <p>&copy; 2024 EduPersona Kenya. Empowering students through personality-based career guidance.</p>
+            <p class="mt-2 text-gray-400">Designed specifically for the Kenyan education system</p>
+        </div>
+    </footer>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
