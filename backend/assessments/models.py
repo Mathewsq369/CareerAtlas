@@ -80,5 +80,15 @@ class AssessmentResult(models.Model):
     confidence = models.DecimalField(max_digits=3, decimal_places=2)  # 0.00-1.00
     created_at = models.DateTimeField(auto_now_add=True)
     
+    def get_dimension_scores(self):
+        """Return dimension scores in a structured way"""
+        return {
+            'EI': float(self.ei_score),
+            'SN': float(self.sn_score), 
+            'TF': float(self.tf_score),
+            'JP': float(self.jp_score)
+        }
+
+        
     def __str__(self):
         return f"{self.student.user.username} - {self.personality_type.mbti_type}"
