@@ -69,7 +69,7 @@
 {% block extra_js %}
 <script>
     const ASSESSMENT_API_URLS = {
-        questions: "{% url 'question-list' %}",
+        questions: "{% url 'assessments:question-list' %}",
         session: "{% url 'assessments:assessment-session-detail' session.id %}",
         submitResponse: "{% url 'assessments:assessment-session-submit-response' session.id %}",
         completeAssessment: "{% url 'assessments:assessment-session-complete-assessment' session.id %}"
