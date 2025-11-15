@@ -8,6 +8,8 @@ from .serializers import (
     QuestionResponseSerializer, AssessmentResultSerializer
 )
 from .services import MBTICalculator
+from django.views.generic import TemplateView
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 class QuestionViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = QuestionSerializer
@@ -101,3 +103,17 @@ class AssessmentResultViewSet(viewsets.ReadOnlyModelViewSet):
         return AssessmentResult.objects.filter(
             student__user=self.request.user
         ).select_related('personality_type')
+
+class AssessmentStartView(LoginRequiredMixin, TemplateView):
+    """View for assessment start page"""
+    template_name = 'assessment/start.html'
+
+def assessment_question(request):
+    """View for individual assessment questions"""
+    # This will be implemented in Phase 3
+    pass
+
+def assessment_results(request):
+    """View for assessment results"""
+    # This will be implemented in Phase 3  
+    pass
