@@ -1,0 +1,112 @@
+/* Custom Styles for EduPersona Kenya */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+body {
+    font-family: 'Inter', sans-serif;
+}
+
+/* Smooth transitions */
+* {
+    transition: all 0.2s ease-in-out;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Loading animations */
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Gradient backgrounds */
+.gradient-bg {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* Card hover effects */
+.hover-lift:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Custom button styles */
+.btn-primary {
+    @apply bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition duration-300 transform hover:scale-105;
+}
+
+.btn-secondary {
+    @apply bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-lg transition duration-300;
+}
+
+.btn-success {
+    @apply bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition duration-300;
+}
+
+/* Assessment specific styles */
+.assessment-option {
+    @apply border-2 border-gray-200 rounded-lg p-4 cursor-pointer transition duration-300;
+}
+
+.assessment-option:hover {
+    @apply border-blue-300 bg-blue-50;
+}
+
+.assessment-option.selected {
+    @apply border-blue-500 bg-blue-100;
+}
+
+/* Personality type badges */
+.badge-intj { @apply bg-purple-100 text-purple-800; }
+.badge-intp { @apply bg-indigo-100 text-indigo-800; }
+.badge-entj { @apply bg-blue-100 text-blue-800; }
+.badge-entp { @apply bg-cyan-100 text-cyan-800; }
+.badge-infj { @apply bg-pink-100 text-pink-800; }
+.badge-infp { @apply bg-rose-100 text-rose-800; }
+.badge-enfj { @apply bg-orange-100 text-orange-800; }
+.badge-enfp { @apply bg-yellow-100 text-yellow-800; }
+.badge-istj { @apply bg-gray-100 text-gray-800; }
+.badge-isfj { @apply bg-green-100 text-green-800; }
+.badge-estj { @apply bg-teal-100 text-teal-800; }
+.badge-esfj { @apply bg-emerald-100 text-emerald-800; }
+.badge-istp { @apply bg-lime-100 text-lime-800; }
+.badge-isfp { @apply bg-amber-100 text-amber-800; }
+.badge-estp { @apply bg-red-100 text-red-800; }
+.badge-esfp { @apply bg-fuchsia-100 text-fuchsia-800; }
+
+/* Responsive text sizes */
+@media (max-width: 640px) {
+    .text-responsive {
+        font-size: 0.875rem;
+    }
+}
+
+/* Print styles */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+    
+    .print-break {
+        page-break-after: always;
+    }
+}
