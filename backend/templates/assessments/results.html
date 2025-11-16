@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Assessment Results - EduPersona Kenya{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-6xl mx-auto">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-blue-800 mb-4">Your Personality Assessment Results</h1>
+            <p class="text-xl text-gray-600">Discover your unique strengths and ideal career paths</p>
+        </div>
+
+        <!-- Personality Type Card -->
+        <div class="bg-white rounded-lg shadow-lg p-8 mb-8 border-l-4 border-blue-500">
+            <div class="flex flex-col md:flex-row items-center justify-between">
+                <div class="flex-1">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-2">
+                        {{ result.personality_type.mbti_type }} - {{ result.personality_type.name }}
+                    </h2>
+                    <p class="text-gray-600 mb-4">{{ result.personality_type.description }}</p>
+                    
+                    <!-- Confidence Score -->
+                    <div class="flex items-center mb-4">
+                        <span class="text-sm font-medium text-gray-600 mr-2">Assessment Confidence:</span>
+                        <div class="w-32 bg-gray-200 rounded-full h-2.5">
+                            <div class="bg-green-600 h-2.5 rounded-full" style="width: {{ result.confidence|floatformat:2 }}%"></div>
+                        </div>
+                        <span class="text-sm font-medium text-gray-600 ml-2">{{ result.confidence|floatformat:0 }}%</span>
+                    </div>
+                </div>
+                
+                <div class="bg-blue-50 rounded-lg p-4 text-center min-w-48">
+                    <div class="text-5xl font-bold text-blue-600 mb-2">{{ result.personality_type.mbti_type }}</div>
+                    <div class="text-sm text-blue-800">{{ result.personality_type.name }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scores Breakdown -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <!-- Dimension Scores -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-xl font-semibold mb-4 text-gray-800">Personality Dimensions</h3>
+                
+                {% with dimensions=result.get_dimension_scores %}
+                <div class="space-y-4">
+                    <div>
+                        <div class="flex justify-between mb-1">
+                            <span class="text-sm font-medium text-gray-700">Extraversion (E) vs Introversion (I)</span>
+                            <span class="text-sm font-medium {% if dimensions.EI > 0 %}text-blue-600{% else %}text-purple-600{% endif %}">
+                                {{ dimensions.EI|floatformat:1 }}
+                            </span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2.5">
+                            <div class="bg-gradient-to-r from-blue-500 to-purple-500 h-2.5 rounded-full" 
+                                 style="width: {% widthratio dimensions.EI 100 50 %}%; margin-left: 50%"></div>
+                        </div>
+                        <div class="flex justify-between text-xs text-gray-500 mt-1">
+                            <span>E</span>
+                            <span>I</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Repeat for other dimensions... -->
+                </div>
+                {% endwith %}
+            </div>
+
+            <!-- Strengths & Weaknesses -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="grid grid-cols-1 gap-4">
+                    <div>
+                        <h4 class="font-semibold text-green-600 mb-2">Strengths</h4>
+                        <p class="text-gray-700 text-sm">{{ result.personality_type.strengths }}</p>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-orange-600 mb-2">Areas for Development</h4>
+                        <p class="text-gray-700 text-sm">{{ result.personality_type.weaknesses }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Career Recommendations -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h3 class="text-2xl font-semibold mb-6 text-gray-800">Recommended Career Paths</h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for rec in career_recommendations %}
+                <div class="border border-gray-200 rounded-lg p-4 hover:shadow-lg transition-shadow duration-300">
+                    <div class="flex justify-between items-start mb-3">
+                        <h4 class="font-semibold text-lg text-gray-800">{{ rec.career.name }}</h4>
+                        <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">
+                            {{ rec.overall_score|floatformat:1 }}
+                        </span>
+                    </div>
+                    
+                    <p class="text-gray-600 text-sm mb-3">{{ rec.career.description|truncatewords:20 }}</p>
+                    
+                    <div class="space-y-2 mb-3">
+                        <div class="flex justify-between text-xs">
+                            <span class="text-gray-500">Personality Match:</span>
+                            <span class="font-medium">{{ rec.personality_match_score|floatformat:2 }}</span>
+                        </div>
+                        <div class="flex justify-between text-xs">
+                            <span class="text-gray-500">Academic Fit:</span>
+                            <span class="font-medium">{{ rec.academic_match_score|floatformat:2 }}</span>
+                        </div>
+                    </div>
+                    
+                    <p class="text-xs text-gray-500 mb-3">{{ rec.reasoning }}</p>
+                    
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs px-2 py-1 rounded 
+                            {% if rec.career.kenyan_market_demand == 'growing' %}bg-green-100 text-green-800
+                            {% elif rec.career.kenyan_market_demand == 'stable' %}bg-blue-100 text-blue-800
+                            {% else %}bg-gray-100 text-gray-800{% endif %}">
+                            {{ rec.career.kenyan_market_demand|title }}
+                        </span>
+                        <a href="{% url 'career-detail' rec.career.id %}" 
+                           class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                            View Details →
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="bg-blue-50 rounded-lg p-6 mb-8">
+            <h3 class="text-xl font-semibold mb-4 text-blue-800">Next Steps</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <a href="{% url 'recommendations' %}" 
+                   class="bg-blue-600 hover:bg-blue-700 text-white text-center py-3 px-4 rounded-lg transition duration-300">
+                    View All Career Recommendations
+                </a>
+                <a href="{% url 'ai-coach' %}" 
+                   class="bg-green-600 hover:bg-green-700 text-white text-center py-3 px-4 rounded-lg transition duration-300">
+                    Chat with AI Coach
+                </a>
+                <a href="{% url 'dashboard' %}" 
+                   class="bg-purple-600 hover:bg-purple-700 text-white text-center py-3 px-4 rounded-lg transition duration-300">
+                    Go to Dashboard
+                </a>
+            </div>
+        </div>
+
+        <!-- Learning Style -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h3 class="text-xl font-semibold mb-4 text-gray-800">Your Learning Style</h3>
+            <div class="flex items-center justify-between">
+                <div>
+                    <h4 class="font-semibold text-lg text-gray-700">Visual Learner</h4>
+                    <p class="text-gray-600 text-sm">You learn best through visual aids, diagrams, and spatial understanding.</p>
+                </div>
+                <div class="text-right">
+                    <div class="text-2xl font-bold text-blue-600">85%</div>
+                    <div class="text-sm text-gray-500">Match</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
