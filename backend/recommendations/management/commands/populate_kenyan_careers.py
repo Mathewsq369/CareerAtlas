@@ -11,6 +11,7 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS('Successfully populated Kenyan career data'))
     
     def populate_subjects(self):
+        """Create common Kenyan high school subjects"""
         kenyan_subjects = [
             {'name': 'Mathematics', 'code': '121', 'category': 'sciences', 'difficulty_level': 'hard'},
             {'name': 'English', 'code': '101', 'category': 'languages', 'difficulty_level': 'medium'},
@@ -25,16 +26,18 @@ class Command(BaseCommand):
         ]
         
         for subject_data in kenyan_subjects:
-            Subject.objects.update_or_create(
+            Subject.objects.get_or_create(
                 code=subject_data['code'],
                 defaults=subject_data
             )
+        self.stdout.write("✅ Created Kenyan subjects")
     
     def populate_careers(self):
+        """Create Kenyan career paths"""
         kenyan_careers = [
             {
                 'name': 'Software Developer',
-                'description': 'Design and develop software applications and systems',
+                'description': 'Design and develop software applications and systems for various industries.',
                 'category': 'stem',
                 'job_outlook': 'high',
                 'kenyan_market_demand': 'growing',
@@ -49,7 +52,7 @@ class Command(BaseCommand):
             },
             {
                 'name': 'Doctor',
-                'description': 'Medical professional diagnosing and treating patients',
+                'description': 'Medical professional diagnosing and treating patients in healthcare settings.',
                 'category': 'health', 
                 'job_outlook': 'high',
                 'kenyan_market_demand': 'high',
@@ -62,11 +65,25 @@ class Command(BaseCommand):
                     {'type': 'ISTJ', 'score': 0.7},
                 ]
             },
-            # Add more Kenyan-relevant careers...
+            {
+                'name': 'Teacher',
+                'description': 'Educate students in various subjects and grade levels.',
+                'category': 'education',
+                'job_outlook': 'medium',
+                'kenyan_market_demand': 'stable',
+                'average_salary': 80000,
+                'required_subjects': ['English'],
+                'recommended_subjects': ['Mathematics', 'History', 'Geography'],
+                'personality_matches': [
+                    {'type': 'ENFJ', 'score': 0.9},
+                    {'type': 'ESFJ', 'score': 0.8},
+                    {'type': 'INFJ', 'score': 0.7},
+                ]
+            },
         ]
         
         for career_data in kenyan_careers:
-            career, created = Career.objects.update_or_create(
+            career, created = Career.objects.get_or_create(
                 name=career_data['name'],
                 defaults={
                     'description': career_data['description'],
@@ -86,9 +103,14 @@ class Command(BaseCommand):
             
             # Add personality matches
             for match in career_data['personality_matches']:
-                personality_type = PersonalityType.objects.get(mbti_type=match['type'])
-                CareerPersonalityMatch.objects.update_or_create(
-                    career=career,
-                    personality_type=personality_type,
-                    defaults={'compatibility_score': match['score']}
-                )
+                try:
+                    personality_type = PersonalityType.objects.get(mbti_type=match['type'])
+                    CareerPersonalityMatch.objects.get_or_create(
+                        career=career,
+                        personality_type=personality_type,
+                        defaults={'compatibility_score': match['score']}
+                    )
+                except PersonalityType.DoesNotExist:
+                    continue
+        
+        self.stdout.write("Created Kenyan careers")
