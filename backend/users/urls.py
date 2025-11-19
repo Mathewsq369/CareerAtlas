@@ -8,16 +8,16 @@ router.register(r'student-profiles', views.StudentProfileViewSet, basename='stud
 router.register(r'schools', views.SchoolViewSet, basename='school')
 
 urlpatterns = [
+    # API URLs (for programmatic access)
     path('api/', include(router.urls)),
-    path('api/register/', views.RegisterView.as_view(), name='register'),
-    path('api/login/', views.LoginView.as_view(), name='login'),
-    path('api/logout/', views.LogoutView.as_view(), name='logout'),
+    path('api/register/', views.RegisterView.as_view(), name='api-register'),
+    path('api/login/', views.LoginView.as_view(), name='api-login'),
+    path('api/logout/', views.LogoutView.as_view(), name='api-logout'),
     
-    # Template URLs
+    # HTML Template URLs (for browser access)
     path('dashboard/', views.DashboardView.as_view(), name='dashboard'),
     path('profile/', views.ProfileView.as_view(), name='profile'),
-    
-    # Add these for traditional Django auth views
-    path('login/', views.CustomLoginView.as_view(), name='login-page'),
-    path('register/', views.RegisterView.as_view(), name='register-page'),
+    path('login/', views.HTMLLoginView.as_view(), name='login'),
+    path('register/', views.HTMLRegisterView.as_view(), name='register'),
+    path('logout/', views.HTMLLogoutView.as_view(), name='logout'),
 ]
