@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}EduPersona Kenya - Career Guidance System{% endblock %}</title>
+    <title>{% block title %}CareerAtlas Kenya - Career Guidance System{% endblock %}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     {% block extra_css %}{% endblock %}
@@ -15,7 +15,7 @@
             <div class="flex justify-between items-center py-4">
                 <div class="flex items-center space-x-2">
                     <i class="fas fa-graduation-cap text-2xl"></i>
-                    <span class="text-xl font-bold">EduPersona Kenya</span>
+                    <span class="text-xl font-bold">CareerAtlas Kenya</span>
                 </div>
                 
                 <div class="flex items-center space-x-4">
@@ -29,8 +29,9 @@
                             <button type="submit" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded">Logout</button>
                         </form>
                     {% else %}
-                        <a href="{% url 'login-page' %}" class="hover:text-blue-200">Login</a>
-                        <a href="{% url 'register-page' %}" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded">Register</a>
+                        <!-- FIXED: Use correct URL names -->
+                        <a href="{% url 'login' %}" class="hover:text-blue-200">Login</a>
+                        <a href="{% url 'register' %}" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded">Register</a>
                     {% endif %}
                 </div>
             </div>
@@ -46,7 +47,7 @@
     <!-- Footer -->
     <footer class="bg-gray-800 text-white py-8 mt-12">
         <div class="container mx-auto px-4 text-center">
-            <p>&copy; 2024 EduPersona Kenya. Empowering students through personality-based career guidance.</p>
+            <p>&copy; 2024 CareerAtlas Kenya. Empowering students through personality-based career guidance.</p>
             <p class="mt-2 text-gray-400">Designed specifically for the Kenyan education system</p>
         </div>
     </footer>

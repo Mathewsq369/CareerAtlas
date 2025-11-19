@@ -92,14 +92,6 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:3000",
 ]
 
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.SessionAuthentication',
-    ],
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
-    ],
-}
 
 LANGUAGE_CODE = 'en-ke'
 TIME_ZONE = 'Africa/Nairobi'
@@ -110,9 +102,27 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 # Authentication settings
-LOGIN_URL = '/users/api/login/'
+LOGIN_URL = '/users/login/'
 LOGIN_REDIRECT_URL = '/users/dashboard/'
-LOGOUT_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/users/login/'
+
+# Django REST Framework settings
+# For development - you can remove these in production
+if DEBUG:
+    REST_FRAMEWORK = {
+        'DEFAULT_AUTHENTICATION_CLASSES': [
+            'rest_framework.authentication.SessionAuthentication',
+        ],
+        'DEFAULT_PERMISSION_CLASSES': [
+            'rest_framework.permissions.IsAuthenticated',
+        ],
+        'DEFAULT_RENDERER_CLASSES': [
+            'rest_framework.renderers.JSONRenderer',
+            # Remove BrowsableAPIRenderer if you don't want the API browser
+            # 'rest_framework.renderers.BrowsableAPIRenderer',
+        ],
+    }
+
 
 # Authentication backends
 AUTHENTICATION_BACKENDS = [
@@ -123,14 +133,3 @@ AUTHENTICATION_BACKENDS = [
 SESSION_COOKIE_AGE = 1209600  # 2 weeks in seconds
 SESSION_SAVE_EVERY_REQUEST = True
 
-# For development - you can remove these in production
-if DEBUG:
-    # Allow the login to be shown in the browsable API
-    REST_FRAMEWORK = {
-        'DEFAULT_AUTHENTICATION_CLASSES': [
-            'rest_framework.authentication.SessionAuthentication',
-        ],
-        'DEFAULT_PERMISSION_CLASSES': [
-            'rest_framework.permissions.IsAuthenticated',
-        ],
-    }
