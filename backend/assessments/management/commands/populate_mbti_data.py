@@ -23,7 +23,7 @@ class Command(BaseCommand):
                 code=dim_data['code'],
                 defaults=dim_data
             )
-        self.stdout.write("✅ Created MBTI dimensions")
+        self.stdout.write("Created MBTI dimensions")
     
     def populate_personality_types(self):
         """Create personality types"""
