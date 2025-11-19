@@ -14,7 +14,7 @@ class Career(models.Model):
     ])
     required_subjects = models.ManyToManyField('Subject', related_name='careers_requiring')
     recommended_subjects = models.ManyToManyField('Subject', related_name='careers_recommending')
-    personality_types = models.ManyToManyField(PersonalityType, through='CareerPersonalityMatch')
+    #personality_types = models.ManyToManyField(PersonalityType, through='CareerPersonalityMatch')
     average_salary = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     job_outlook = models.CharField(max_length=50, choices=[
         ('high', 'High Demand'),
