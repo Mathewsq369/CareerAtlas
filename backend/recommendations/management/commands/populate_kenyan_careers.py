@@ -30,7 +30,7 @@ class Command(BaseCommand):
                 code=subject_data['code'],
                 defaults=subject_data
             )
-        self.stdout.write("✅ Created Kenyan subjects")
+        self.stdout.write("Created Kenyan subjects")
     
     def populate_careers(self):
         """Create Kenyan career paths"""
