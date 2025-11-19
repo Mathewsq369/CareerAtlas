@@ -99,4 +99,4 @@ class Command(BaseCommand):
                 mbti_type=type_data['mbti_type'],
                 defaults=type_data
             )
-        self.stdout.write("✅ Created personality types")
+        self.stdout.write("Created personality types")
