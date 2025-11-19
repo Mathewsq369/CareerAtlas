@@ -24,10 +24,13 @@
                         <a href="{% url 'assessment-start' %}" class="hover:text-blue-200">Assessment</a>
                         <a href="{% url 'recommendations' %}" class="hover:text-blue-200">Careers</a>
                         <a href="{% url 'ai-coach' %}" class="hover:text-blue-200">AI Coach</a>
-                        <a href="{% url 'logout' %}" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded">Logout</a>
+                        <form method="post" action="{% url 'logout' %}" class="inline">
+                            {% csrf_token %}
+                            <button type="submit" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded">Logout</button>
+                        </form>
                     {% else %}
-                        <a href="{% url 'login' %}" class="hover:text-blue-200">Login</a>
-                        <a href="{% url 'register' %}" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded">Register</a>
+                        <a href="{% url 'login-page' %}" class="hover:text-blue-200">Login</a>
+                        <a href="{% url 'register-page' %}" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded">Register</a>
                     {% endif %}
                 </div>
             </div>

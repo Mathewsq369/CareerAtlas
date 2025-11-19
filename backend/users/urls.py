@@ -16,4 +16,8 @@ urlpatterns = [
     # Template URLs
     path('dashboard/', views.DashboardView.as_view(), name='dashboard'),
     path('profile/', views.ProfileView.as_view(), name='profile'),
+    
+    # Add these for traditional Django auth views
+    path('login/', views.CustomLoginView.as_view(), name='login-page'),
+    path('register/', views.RegisterView.as_view(), name='register-page'),
 ]

@@ -5,13 +5,17 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.views import APIView
 from django.contrib.auth import login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic import TemplateView
+from django.contrib.auth.views import LoginView
+from django.views.generic import TemplateView, CreateView
+from django.urls import reverse_lazy
+from .forms import CustomUserCreationForm
 
 from .models import CustomUser, StudentProfile, School
 from .serializers import (
     UserSerializer, RegisterSerializer, LoginSerializer,
     StudentProfileSerializer, SchoolSerializer
 )
+
 
 class RegisterView(generics.CreateAPIView):
     permission_classes = [AllowAny]
@@ -115,3 +119,22 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
 class ProfileView(LoginRequiredMixin, TemplateView):
     template_name = 'dashboard/profile.html'
+
+class CustomLoginView(LoginView):
+    template_name = 'registration/login.html'
+    redirect_authenticated_user = True
+    
+    def get_success_url(self):
+        return reverse_lazy('dashboard')
+
+class RegisterView(CreateView):
+    form_class = CustomUserCreationForm
+    template_name = 'registration/register.html'
+    success_url = reverse_lazy('dashboard')
+    
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        # Log the user in after registration
+        from django.contrib.auth import login
+        login(self.request, self.user)
+        return response
