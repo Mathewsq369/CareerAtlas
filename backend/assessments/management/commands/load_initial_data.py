@@ -7,13 +7,10 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.stdout.write('Loading initial data for EduPersona Kenya...')
         
-        # Load MBTI data
+        # Load data in correct order to avoid foreign key issues
         call_command('populate_mbti_data')
-        
-        # Load Kenyan careers
+        call_command('populate_learning_styles') 
         call_command('populate_kenyan_careers')
-        
-        # Load sample questions
         call_command('populate_sample_questions')
         
         self.stdout.write(
