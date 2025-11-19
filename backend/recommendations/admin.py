@@ -6,7 +6,7 @@ class CareerAdmin(admin.ModelAdmin):
     list_display = ['name', 'category', 'job_outlook', 'kenyan_market_demand']
     list_filter = ['category', 'job_outlook', 'kenyan_market_demand']
     search_fields = ['name', 'description']
-    filter_horizontal = ['required_subjects', 'recommended_subjects', 'personality_types']
+    filter_horizontal = ['required_subjects', 'recommended_subjects']
 
 @admin.register(Subject)
 class SubjectAdmin(admin.ModelAdmin):
@@ -17,7 +17,6 @@ class SubjectAdmin(admin.ModelAdmin):
 @admin.register(LearningStyle)
 class LearningStyleAdmin(admin.ModelAdmin):
     list_display = ['name', 'description']
-    filter_horizontal = ['personality_types']
 
 @admin.register(StudentRecommendation)
 class StudentRecommendationAdmin(admin.ModelAdmin):
