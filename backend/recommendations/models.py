@@ -68,7 +68,7 @@ class LearningStyle(models.Model):
     
     name = models.CharField(max_length=50, choices=STYLE_CHOICES)
     description = models.TextField()
-    personality_types = models.ManyToManyField(PersonalityType)
+    #personality_types = models.ManyToManyField(PersonalityType)
     study_recommendations = models.TextField()
     
     def __str__(self):
