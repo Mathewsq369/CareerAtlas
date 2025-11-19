@@ -83,6 +83,9 @@ DATABASES = {
     }
 }
 
+# Auth user
+AUTH_USER_MODEL = 'users.CustomUser'
+
 # CORS settings for frontend integration
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
@@ -104,6 +107,3 @@ USE_I18N = True
 USE_TZ = True
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-# Auth user
-AUTH_USER_MODEL = 'users.CustomUser'
