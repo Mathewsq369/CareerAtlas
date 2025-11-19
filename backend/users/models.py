@@ -39,7 +39,7 @@ class StudentProfile(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
     school = models.ForeignKey('School', on_delete=models.SET_NULL, null=True)
     grade_level = models.CharField(max_length=50)  # Form 1-4, College year, etc.
-    subjects = models.ManyToManyField('Subject', blank=True)
+    subjects = models.ManyToManyField('recommendations.Subject', blank=True)
     career_aspirations = models.TextField(blank=True)
     kcpe_score = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     kcse_score = models.CharField(max_length=10, blank=True)  # A, A-, B+, etc.
