@@ -4,14 +4,13 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.views import APIView
 from django.contrib import messages
-from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView
 from django.views.generic import TemplateView, CreateView, View
 from django.urls import reverse_lazy
 from django.shortcuts import render, redirect
 from .forms import CustomUserCreationForm
-
 from .models import CustomUser, StudentProfile, School
 from .serializers import (
     UserSerializer, RegisterSerializer, LoginSerializer,
@@ -148,7 +147,6 @@ class SchoolViewSet(viewsets.ReadOnlyModelViewSet):
         serializer = self.get_serializer(schools, many=True)
         return Response(serializer.data)
 
-# Template Views
 class DashboardView(LoginRequiredMixin, TemplateView):
     template_name = 'dashboard/home.html'
     
@@ -156,21 +154,54 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         user = self.request.user
         
+        # Ensure user has a student profile
+        self.ensure_student_profile(user)
+        
         # Get assessment results if exists
         try:
-            assessment_result = user.studentprofile.assessmentresult
+            from assessments.models import AssessmentResult
+            assessment_result = AssessmentResult.objects.get(student=user.studentprofile)
             context['assessment_result'] = assessment_result
         except AssessmentResult.DoesNotExist:
             context['assessment_result'] = None
+        except Exception as e:
+            # Handle any other exceptions gracefully
+            context['assessment_result'] = None
+            print(f"Error getting assessment result: {e}")
         
         # Get recent recommendations
-        from recommendations.models import StudentRecommendation
-        recommendations = StudentRecommendation.objects.filter(
-            student=user.studentprofile
-        ).select_related('career')[:5]
-        context['recommendations'] = recommendations
+        try:
+            from recommendations.models import StudentRecommendation
+            recommendations = StudentRecommendation.objects.filter(
+                student=user.studentprofile
+            ).select_related('career')[:5]
+            context['recommendations'] = recommendations
+        except Exception as e:
+            context['recommendations'] = []
+            print(f"Error getting recommendations: {e}")
+        
+        # Get learning style if available
+        try:
+            from ai_coach.services import AICoachService
+            coach = AICoachService(user.studentprofile)
+            learning_style = coach.get_learning_style_recommendation()
+            context['learning_style'] = learning_style
+        except Exception as e:
+            context['learning_style'] = None
+            print(f"Error getting learning style: {e}")
         
         return context
+    
+    def ensure_student_profile(self, user):
+        """Ensure the user has a student profile, create if missing"""
+        try:
+            # Try to access the student profile
+            _ = user.studentprofile
+        except Exception:
+            # Profile doesn't exist, create one
+            from .models import StudentProfile
+            StudentProfile.objects.create(user=user)
+            print(f"Created student profile for user: {user.username}")
 
 class ProfileView(LoginRequiredMixin, TemplateView):
     template_name = 'dashboard/profile.html'
