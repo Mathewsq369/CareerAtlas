@@ -45,37 +45,55 @@ class HTMLRegisterView(View):
         return render(request, 'registration/register.html')
     
     def post(self, request):
-        from django.contrib.auth.models import User
-        from .models import StudentProfile
-        
         username = request.POST.get('username')
         email = request.POST.get('email')
         password = request.POST.get('password')
+        password_confirm = request.POST.get('password2')
         first_name = request.POST.get('first_name')
         last_name = request.POST.get('last_name')
         
+        # Basic validation
+        if password != password_confirm:
+            messages.error(request, 'Passwords do not match.')
+            return render(request, 'registration/register.html')
+        
+        if len(password) < 8:
+            messages.error(request, 'Password must be at least 8 characters long.')
+            return render(request, 'registration/register.html')
+        
         try:
+            from django.contrib.auth import get_user_model
+            User = get_user_model()
+            
+            # Check if username exists
+            if User.objects.filter(username=username).exists():
+                messages.error(request, 'Username already exists.')
+                return render(request, 'registration/register.html')
+            
             # Create user
             user = User.objects.create_user(
                 username=username,
                 email=email,
                 password=password,
                 first_name=first_name,
-                last_name=last_name
+                last_name=last_name,
+                user_type='student'
             )
             
-            # Create student profile
-            StudentProfile.objects.create(user=user)
+            # Create student profile (this should happen automatically via signal)
+            # But we'll ensure it exists here too
+            from .models import StudentProfile
+            StudentProfile.objects.get_or_create(user=user)
             
             # Log the user in
             login(request, user)
-            messages.success(request, 'Account created successfully!')
+            messages.success(request, 'Account created successfully! Welcome to CareerAtlas.')
             return redirect('dashboard')
             
         except Exception as e:
             messages.error(request, f'Error creating account: {str(e)}')
             return render(request, 'registration/register.html')
-
+            
 class HTMLLoginView(View):
     def get(self, request):
         if request.user.is_authenticated:
