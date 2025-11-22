@@ -125,7 +125,7 @@ class PersonalityTypeViewSet(viewsets.ReadOnlyModelViewSet):
 # Template Views
 class AssessmentStartView(LoginRequiredMixin, TemplateView):
     """View for assessment start page"""
-    template_name = 'assessment/start.html'
+    template_name = 'assessments/start.html'
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -138,7 +138,7 @@ class AssessmentStartView(LoginRequiredMixin, TemplateView):
 
 class AssessmentQuestionView(LoginRequiredMixin, TemplateView):
     """View for assessment questions"""
-    template_name = 'assessment/question.html'
+    template_name = 'assessments/question.html'
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -153,7 +153,7 @@ class AssessmentQuestionView(LoginRequiredMixin, TemplateView):
 
 class AssessmentResultsView(LoginRequiredMixin, DetailView):
     """View for assessment results"""
-    template_name = 'assessment/results.html'
+    template_name = 'assessments/results.html'
     context_object_name = 'result'
     
     def get_object(self):
