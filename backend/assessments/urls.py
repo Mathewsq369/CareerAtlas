@@ -6,8 +6,8 @@ app_name = 'assessments'
 
 router = DefaultRouter()
 router.register(r'questions', views.QuestionViewSet, basename='question')
-router.register(r'sessions', views.AssessmentSessionViewSet, basename='assessment-session')
-router.register(r'results', views.AssessmentResultViewSet, basename='assessment-result')
+router.register(r'sessions', views.AssessmentSessionViewSet, basename='assessments-session')
+router.register(r'results', views.AssessmentResultViewSet, basename='assessments-result')
 router.register(r'personality-types', views.PersonalityTypeViewSet, basename='personality-type')
 
 urlpatterns = [
@@ -15,9 +15,9 @@ urlpatterns = [
     path('api/', include(router.urls)),
     
     # Template URLs - MAKE SURE THESE EXIST
-    path('start/', views.AssessmentStartView.as_view(), name='assessment-start'),  # This should exist
-    path('question/', views.AssessmentQuestionView.as_view(), name='assessment-question'),
-    path('results/', views.AssessmentResultsView.as_view(), name='assessment-results'),
+    path('start/', views.AssessmentStartView.as_view(), name='assessments-start'),
+    path('question/', views.AssessmentQuestionView.as_view(), name='assessments-question'),
+    path('results/', views.AssessmentResultsView.as_view(), name='assessments-results'),
     
     # API functions
     path('api/submit_bulk_responses/', views.submit_bulk_responses, name='submit-bulk-responses'),
