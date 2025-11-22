@@ -8,7 +8,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', RedirectView.as_view(pattern_name='dashboard'), name='home'),
     path('users/', include('users.urls')),
-    path('assessment/', include('assessments.urls', namespace='assessments')),
+    path('assessments/', include('assessments.urls', namespace='assessments')),
     path('recommendations/', include('recommendations.urls')),
     path('ai-coach/', include('ai_coach.urls')),
 ]
