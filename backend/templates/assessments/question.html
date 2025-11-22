@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Assessment - Question {{ question_number }}{% endblock %}
+{% block title %}Assessment - CareerAtlas Kenya{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -15,6 +15,16 @@
         transform: translateY(-2px);
         box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     }
+    .answer-option.selected {
+        background-color: #dbeafe;
+        border-color: #3b82f6;
+    }
+    #loading-spinner {
+        display: block;
+    }
+    #question-container {
+        display: none;
+    }
 </style>
 {% endblock %}
 
@@ -25,7 +35,10 @@
         <div class="mb-8">
             <div class="flex items-center justify-between mb-2">
                 <span class="text-sm font-medium text-blue-800">Assessment Progress</span>
-                <span class="text-sm font-medium text-blue-800" id="progress-text">0%</span>
+                <span class="text-sm font-medium text-blue-800">
+                    <span id="question-counter">Question 0 of 0</span> • 
+                    <span id="progress-text">0%</span>
+                </span>
             </div>
             <div class="w-full bg-gray-200 rounded-full h-3">
                 <div id="progress-bar" class="bg-blue-600 h-3 rounded-full progress-bar" style="width: 0%"></div>
@@ -33,25 +46,35 @@
         </div>
 
         <!-- Question Card -->
-        <div id="question-container" class="bg-white rounded-lg shadow-md p-6 mb-6">
-            <div class="text-center">
-                <h2 id="question-text" class="text-xl font-semibold mb-6 text-gray-800">Loading question...</h2>
+        <div id="question-container" class="bg-white rounded-lg shadow-lg p-8 mb-6">
+            <div class="text-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Personality Assessment</h2>
+                <p class="text-gray-600">Choose the answer that best describes you</p>
+            </div>
+            
+            <div class="mb-8">
+                <h3 id="question-text" class="text-xl font-semibold mb-6 text-gray-800 text-center leading-relaxed">
+                    Loading question...
+                </h3>
                 
                 <!-- Answer Options -->
-                <div id="answer-options" class="space-y-3 max-w-2xl mx-auto">
+                <div id="answer-options" class="space-y-4 max-w-3xl mx-auto">
                     <!-- Options will be loaded here by JavaScript -->
                 </div>
+            </div>
 
-                <!-- Navigation -->
-                <div class="mt-8 flex justify-between">
-                    <button id="prev-btn" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg transition duration-300 opacity-50 cursor-not-allowed" disabled>
-                        Previous
+            <!-- Navigation -->
+            <div class="flex justify-between items-center pt-6 border-t border-gray-200">
+                <button id="prev-btn" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg transition duration-300 flex items-center disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                    <i class="fas fa-arrow-left mr-2"></i>Previous
+                </button>
+                
+                <div class="flex items-center space-x-4">
+                    <button id="next-btn" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition duration-300 flex items-center">
+                        Next Question<i class="fas fa-arrow-right ml-2"></i>
                     </button>
-                    <button id="next-btn" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition duration-300">
-                        Next Question
-                    </button>
-                    <button id="finish-btn" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg transition duration-300 hidden">
-                        Finish Assessment
+                    <button id="finish-btn" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg transition duration-300 flex items-center hidden">
+                        Finish Assessment<i class="fas fa-check ml-2"></i>
                     </button>
                 </div>
             </div>
@@ -59,21 +82,24 @@
 
         <!-- Loading Spinner -->
         <div id="loading-spinner" class="text-center py-12">
-            <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-            <p class="mt-4 text-gray-600">Loading assessment...</p>
+            <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+            <p class="text-gray-600 text-lg">Loading assessment questions...</p>
+        </div>
+
+        <!-- Error Message -->
+        <div id="error-message" class="hidden bg-red-100 border border-red-400 text-red-700 px-6 py-4 rounded-lg mb-6">
+            <div class="flex items-center">
+                <i class="fas fa-exclamation-triangle mr-3"></i>
+                <p id="error-text" class="flex-1"></p>
+                <button onclick="location.reload()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm">
+                    Retry
+                </button>
+            </div>
         </div>
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<script>
-    const ASSESSMENT_API_URLS = {
-        questions: "{% url 'assessments:question-list' %}",
-        session: "{% url 'assessments:assessments-session-detail' session.id %}",
-        submitResponse: "{% url 'assessments:assessments-session-submit-response' session.id %}",
-        completeAssessment: "{% url 'assessments:assessments-session-complete-assessment' session.id %}"
-    };
-</script>
-<script src="{% static 'js/assessment.js' %}"></script>
+<script src="{% static 'js/assessments.js' %}"></script>
 {% endblock %}
