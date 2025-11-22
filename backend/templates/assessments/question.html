@@ -70,9 +70,9 @@
 <script>
     const ASSESSMENT_API_URLS = {
         questions: "{% url 'assessments:question-list' %}",
-        session: "{% url 'assessments:assessment-session-detail' session.id %}",
-        submitResponse: "{% url 'assessments:assessment-session-submit-response' session.id %}",
-        completeAssessment: "{% url 'assessments:assessment-session-complete-assessment' session.id %}"
+        session: "{% url 'assessments:assessments-session-detail' session.id %}",
+        submitResponse: "{% url 'assessments:assessments-session-submit-response' session.id %}",
+        completeAssessment: "{% url 'assessments:assessments-session-complete-assessment' session.id %}"
     };
 </script>
 <script src="{% static 'js/assessment.js' %}"></script>
