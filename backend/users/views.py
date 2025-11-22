@@ -38,6 +38,8 @@ class RegisterView(generics.CreateAPIView):
             status=status.HTTP_201_CREATED
         )
 
+# users/views.py - Update the HTMLRegisterView post method
+
 class HTMLRegisterView(View):
     def get(self, request):
         if request.user.is_authenticated:
@@ -45,20 +47,38 @@ class HTMLRegisterView(View):
         return render(request, 'registration/register.html')
     
     def post(self, request):
+        print("=== REGISTRATION DEBUG ===")
+        print(f"POST data: {dict(request.POST)}")
+        
         username = request.POST.get('username')
         email = request.POST.get('email')
-        password = request.POST.get('password')
-        password_confirm = request.POST.get('password2')
+        password1 = request.POST.get('password1')  # CHANGED: password1 instead of password
+        password2 = request.POST.get('password2')
         first_name = request.POST.get('first_name')
         last_name = request.POST.get('last_name')
         
-        # Basic validation
-        if password != password_confirm:
-            messages.error(request, 'Passwords do not match.')
+        print(f"Username: {username}")
+        print(f"Email: {email}")
+        print(f"First Name: {first_name}")
+        print(f"Last Name: {last_name}")
+        print(f"Password1: {password1}")  # DEBUG
+        print(f"Password2: {password2}")  # DEBUG
+        
+        # Basic validation - UPDATED FIELD NAMES
+        if not all([username, email, password1, password2, first_name, last_name]):
+            messages.error(request, 'All fields are required.')
+            print("Missing required fields")
+            print(f"Missing fields check: username={username}, email={email}, password1={password1}, password2={password2}, first_name={first_name}, last_name={last_name}")
             return render(request, 'registration/register.html')
         
-        if len(password) < 8:
+        if password1 != password2:  # CHANGED: password1 instead of password
+            messages.error(request, 'Passwords do not match.')
+            print("Passwords don't match")
+            return render(request, 'registration/register.html')
+        
+        if len(password1) < 8:  # CHANGED: password1 instead of password
             messages.error(request, 'Password must be at least 8 characters long.')
+            print("Password too short")
             return render(request, 'registration/register.html')
         
         try:
@@ -68,32 +88,45 @@ class HTMLRegisterView(View):
             # Check if username exists
             if User.objects.filter(username=username).exists():
                 messages.error(request, 'Username already exists.')
+                print("Username already exists")
                 return render(request, 'registration/register.html')
             
-            # Create user
+            # Check if email exists
+            if User.objects.filter(email=email).exists():
+                messages.error(request, 'Email already exists.')
+                print("Email already exists")
+                return render(request, 'registration/register.html')
+            
+            print("Creating user...")
+            # Create user - CHANGED: use password1
             user = User.objects.create_user(
                 username=username,
                 email=email,
-                password=password,
+                password=password1,  # CHANGED: password1 instead of password
                 first_name=first_name,
                 last_name=last_name,
                 user_type='student'
             )
+            print(f"User created: {user.username}")
             
-            # Create student profile (this should happen automatically via signal)
-            # But we'll ensure it exists here too
+            # Create student profile
             from .models import StudentProfile
-            StudentProfile.objects.get_or_create(user=user)
+            profile, created = StudentProfile.objects.get_or_create(user=user)
+            print(f"Student profile created: {created}")
             
             # Log the user in
             login(request, user)
             messages.success(request, 'Account created successfully! Welcome to CareerAtlas.')
+            print("User logged in successfully")
             return redirect('dashboard')
             
         except Exception as e:
+            print(f"Registration error: {str(e)}")
+            import traceback
+            print(f"Full traceback: {traceback.format_exc()}")  # Added full traceback
             messages.error(request, f'Error creating account: {str(e)}')
             return render(request, 'registration/register.html')
-            
+                                   
 class HTMLLoginView(View):
     def get(self, request):
         if request.user.is_authenticated:
