@@ -33,8 +33,17 @@ class AssessmentEngine {
 
     async loadQuestions() {
         try {
-            const response = await fetch('/assessment/api/questions/');
+            console.log('Loading questions from API...');
+            
+            // FIXED: Correct URL path (plural 'assessments')
+            const response = await fetch('/assessments/api/questions/');
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
             this.questions = await response.json();
+            console.log(`Loaded ${this.questions.length} questions:`, this.questions);
             
             // Initialize session
             await this.initializeSession();
@@ -49,25 +58,43 @@ class AssessmentEngine {
 
     async initializeSession() {
         try {
-            const response = await fetch('/assessment/api/sessions/', {
+            console.log('Initializing assessment session...');
+            
+            // FIXED: Correct URL path
+            const response = await fetch('/assessments/api/sessions/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRFToken': this.getCsrfToken()
-                }
+                },
+                body: JSON.stringify({})
             });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
             const session = await response.json();
             this.sessionId = session.id;
+            console.log('Session initialized with ID:', this.sessionId);
+            
         } catch (error) {
             console.error('Error initializing session:', error);
+            // Continue without session for demo purposes
+            this.sessionId = 'demo-session';
         }
     }
 
     showQuestion(index) {
-        if (index < 0 || index >= this.questions.length) return;
+        if (index < 0 || index >= this.questions.length) {
+            console.error('Invalid question index:', index);
+            return;
+        }
 
         this.currentQuestionIndex = index;
         const question = this.questions[index];
+
+        console.log('Showing question:', question);
 
         this.questionText.textContent = question.text;
         this.renderAnswerOptions(question);
@@ -78,24 +105,27 @@ class AssessmentEngine {
     renderAnswerOptions(question) {
         this.answerOptions.innerHTML = '';
 
+        if (!question.choices || question.choices.length === 0) {
+            this.answerOptions.innerHTML = '<p class="text-red-500">No answer options available</p>';
+            return;
+        }
+
         question.choices.forEach(choice => {
             const optionDiv = document.createElement('div');
-            optionDiv.className = 'assessment-option';
+            optionDiv.className = 'answer-option w-full text-left p-4 border-2 border-gray-200 rounded-lg hover:bg-blue-50 hover:border-blue-300 transition duration-200 cursor-pointer';
+            
             if (this.responses.get(question.id) === choice.id) {
-                optionDiv.classList.add('selected');
+                optionDiv.classList.add('bg-blue-50', 'border-blue-300');
             }
 
             optionDiv.innerHTML = `
                 <div class="flex items-center justify-between">
-                    <span class="text-gray-800">${choice.text}</span>
+                    <span class="flex-1 text-gray-800 text-left">${choice.text}</span>
                     <div class="flex items-center space-x-2">
-                        <span class="text-sm text-gray-500 px-2 py-1 bg-gray-100 rounded">
+                        <span class="text-xs text-gray-500 px-2 py-1 bg-gray-100 rounded">
                             Value: ${choice.value > 0 ? '+' : ''}${choice.value}
                         </span>
-                        <div class="w-4 h-4 border-2 border-gray-300 rounded-full flex items-center justify-center">
-                            ${this.responses.get(question.id) === choice.id ? 
-                                '<div class="w-2 h-2 bg-blue-600 rounded-full"></div>' : ''}
-                        </div>
+                        <i class="fas fa-chevron-right text-blue-500 ml-2"></i>
                     </div>
                 </div>
             `;
@@ -106,6 +136,8 @@ class AssessmentEngine {
     }
 
     async selectAnswer(questionId, choiceId) {
+        console.log(`Selected answer for question ${questionId}: ${choiceId}`);
+        
         this.responses.set(questionId, choiceId);
         
         // Save response to server
@@ -114,6 +146,7 @@ class AssessmentEngine {
         // Update UI
         this.renderAnswerOptions(this.questions[this.currentQuestionIndex]);
         this.updateProgress();
+        this.updateNavigation();
     }
 
     async saveResponse(questionId, choiceId) {
@@ -122,7 +155,8 @@ class AssessmentEngine {
         this.isSubmitting = true;
         
         try {
-            await fetch(`/assessment/api/sessions/${this.sessionId}/submit_response/`, {
+            // FIXED: Correct URL path
+            const response = await fetch(`/assessments/api/sessions/${this.sessionId}/submit_response/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -134,8 +168,16 @@ class AssessmentEngine {
                     response_time: Math.floor(Math.random() * 10) + 1 // Simulate response time
                 })
             });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            console.log('Response saved successfully');
+            
         } catch (error) {
             console.error('Error saving response:', error);
+            // Don't show error to user for failed saves, just log it
         } finally {
             this.isSubmitting = false;
         }
@@ -150,38 +192,87 @@ class AssessmentEngine {
     nextQuestion() {
         if (this.currentQuestionIndex < this.questions.length - 1) {
             this.showQuestion(this.currentQuestionIndex + 1);
+        } else {
+            // If we're on the last question and user clicks next, show completion
+            this.showCompletionOptions();
         }
+    }
+
+    showCompletionOptions() {
+        const answeredCount = this.responses.size;
+        const totalQuestions = this.questions.length;
+        
+        this.questionContainer.innerHTML = `
+            <div class="bg-white rounded-lg shadow-md p-8 text-center">
+                <div class="mb-6">
+                    <i class="fas fa-check-circle text-green-500 text-6xl mb-4"></i>
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">Assessment Complete!</h2>
+                    <p class="text-gray-600 mb-4">
+                        You've answered ${answeredCount} out of ${totalQuestions} questions.
+                    </p>
+                    ${answeredCount < totalQuestions ? 
+                        '<p class="text-yellow-600 text-sm mb-4">You can still go back and answer remaining questions.</p>' : 
+                        '<p class="text-green-600 text-sm mb-4">All questions answered! Ready to see your results.</p>'
+                    }
+                </div>
+                
+                <div class="space-y-4 max-w-md mx-auto">
+                    <button onclick="assessmentEngine.finishAssessment()" 
+                            class="w-full bg-green-600 hover:bg-green-700 text-white py-3 px-6 rounded-lg font-semibold transition duration-200">
+                        <i class="fas fa-chart-bar mr-2"></i>View My Results
+                    </button>
+                    
+                    <button onclick="assessmentEngine.showQuestion(0)" 
+                            class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-6 rounded-lg font-semibold transition duration-200">
+                        <i class="fas fa-redo mr-2"></i>Review Answers
+                    </button>
+                </div>
+            </div>
+        `;
     }
 
     updateProgress() {
         const answeredCount = this.responses.size;
         const totalQuestions = this.questions.length;
-        const progress = (answeredCount / totalQuestions) * 100;
+        const progress = totalQuestions > 0 ? (answeredCount / totalQuestions) * 100 : 0;
 
-        this.progressBar.style.width = `${progress}%`;
-        this.progressText.textContent = `${Math.round(progress)}%`;
+        if (this.progressBar) {
+            this.progressBar.style.width = `${progress}%`;
+        }
+        if (this.progressText) {
+            this.progressText.textContent = `${Math.round(progress)}%`;
+        }
 
         // Update question counter
         const questionCounter = document.getElementById('question-counter');
-        if (questionCounter) {
+        if (questionCounter && totalQuestions > 0) {
             questionCounter.textContent = `Question ${this.currentQuestionIndex + 1} of ${totalQuestions}`;
         }
     }
 
     updateNavigation() {
+        if (!this.prevBtn || !this.nextBtn || !this.finishBtn) return;
+
         this.prevBtn.disabled = this.currentQuestionIndex === 0;
         
         const isLastQuestion = this.currentQuestionIndex === this.questions.length - 1;
-        this.nextBtn.style.display = isLastQuestion ? 'none' : 'block';
-        this.finishBtn.style.display = isLastQuestion ? 'block' : 'none';
         
-        // Enable finish button only if all questions are answered
-        this.finishBtn.disabled = this.responses.size < this.questions.length;
+        if (this.nextBtn) {
+            this.nextBtn.style.display = isLastQuestion ? 'none' : 'block';
+        }
+        if (this.finishBtn) {
+            this.finishBtn.style.display = isLastQuestion ? 'block' : 'none';
+            this.finishBtn.disabled = this.responses.size < this.questions.length;
+        }
     }
 
     async finishAssessment() {
-        if (this.responses.size < this.questions.length) {
-            if (!confirm('You haven\'t answered all questions. Are you sure you want to finish?')) {
+        const answeredCount = this.responses.size;
+        const totalQuestions = this.questions.length;
+
+        if (answeredCount < totalQuestions) {
+            const proceed = confirm(`You have answered ${answeredCount} out of ${totalQuestions} questions. Are you sure you want to finish the assessment?`);
+            if (!proceed) {
                 return;
             }
         }
@@ -189,17 +280,19 @@ class AssessmentEngine {
         this.showLoading('Generating your results...');
 
         try {
-            const response = await fetch(`/assessment/api/sessions/${this.sessionId}/complete_assessment/`, {
+            // FIXED: Correct URL path
+            const response = await fetch(`/assessments/api/sessions/${this.sessionId}/complete_assessment/`, {
                 method: 'POST',
                 headers: {
-                    'X-CSRFToken': this.getCsrfToken()
+                    'X-CSRRF-Token': this.getCsrfToken()
                 }
             });
 
             if (response.ok) {
-                window.location.href = '/assessment/results/';
+                console.log('Assessment completed successfully, redirecting...');
+                window.location.href = '/assessments/results/';
             } else {
-                throw new Error('Failed to complete assessment');
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
         } catch (error) {
             console.error('Error completing assessment:', error);
@@ -208,41 +301,61 @@ class AssessmentEngine {
     }
 
     hideLoading() {
-        this.loadingSpinner.style.display = 'none';
-        this.questionContainer.style.display = 'block';
+        if (this.loadingSpinner) {
+            this.loadingSpinner.style.display = 'none';
+        }
+        if (this.questionContainer) {
+            this.questionContainer.style.display = 'block';
+        }
     }
 
     showLoading(message = 'Loading...') {
-        this.loadingSpinner.innerHTML = `
-            <div class="text-center">
-                <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-                <p class="mt-4 text-gray-600">${message}</p>
-            </div>
-        `;
-        this.loadingSpinner.style.display = 'block';
-        this.questionContainer.style.display = 'none';
+        if (this.loadingSpinner) {
+            this.loadingSpinner.innerHTML = `
+                <div class="text-center py-8">
+                    <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+                    <p class="text-gray-600 text-lg">${message}</p>
+                </div>
+            `;
+            this.loadingSpinner.style.display = 'block';
+        }
+        if (this.questionContainer) {
+            this.questionContainer.style.display = 'none';
+        }
     }
 
     showError(message) {
-        this.loadingSpinner.innerHTML = `
-            <div class="text-center text-red-600">
-                <i class="fas fa-exclamation-triangle text-4xl mb-4"></i>
-                <p class="text-lg font-semibold">${message}</p>
-                <button onclick="location.reload()" class="mt-4 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded">
-                    Retry
-                </button>
-            </div>
-        `;
+        if (this.loadingSpinner) {
+            this.loadingSpinner.innerHTML = `
+                <div class="text-center text-red-600 py-8">
+                    <i class="fas fa-exclamation-triangle text-4xl mb-4"></i>
+                    <p class="text-lg font-semibold mb-4">${message}</p>
+                    <button onclick="location.reload()" class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg transition duration-200">
+                        <i class="fas fa-refresh mr-2"></i>Retry
+                    </button>
+                </div>
+            `;
+            this.loadingSpinner.style.display = 'block';
+        }
+        if (this.questionContainer) {
+            this.questionContainer.style.display = 'none';
+        }
     }
 
     getCsrfToken() {
-        return document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+        return csrfToken ? csrfToken.value : '';
     }
 }
 
 // Initialize assessment when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM loaded, initializing assessment engine...');
+    
     if (document.getElementById('question-container')) {
         window.assessmentEngine = new AssessmentEngine();
+        console.log('Assessment engine initialized');
+    } else {
+        console.log('No assessment container found');
     }
 });
