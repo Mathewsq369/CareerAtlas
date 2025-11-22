@@ -14,8 +14,8 @@ urlpatterns = [
     # API URLs
     path('api/', include(router.urls)),
     
-    # Template URLs
-    path('start/', views.AssessmentStartView.as_view(), name='assessment-start'),
+    # Template URLs - MAKE SURE THESE EXIST
+    path('start/', views.AssessmentStartView.as_view(), name='assessment-start'),  # This should exist
     path('question/', views.AssessmentQuestionView.as_view(), name='assessment-question'),
     path('results/', views.AssessmentResultsView.as_view(), name='assessment-results'),
     
