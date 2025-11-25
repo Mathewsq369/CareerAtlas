@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token }}">
     <title>{% block title %}CareerAtlas Kenya - Career Guidance System{% endblock %}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -29,7 +30,6 @@
                             <button type="submit" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded">Logout</button>
                         </form>
                     {% else %}
-                        <!-- FIXED: Use correct URL names -->
                         <a href="{% url 'login' %}" class="hover:text-blue-200">Login</a>
                         <a href="{% url 'register' %}" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded">Register</a>
                     {% endif %}
