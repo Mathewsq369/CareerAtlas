@@ -41,7 +41,12 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-default-key-for-dev')
 
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'yourdomain.com']
+ALLOWED_HOSTS = [
+    "127.0.0.1",
+    "localhost",
+    ".trycloudflare.com",
+]
+
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -90,7 +95,21 @@ AUTH_USER_MODEL = 'users.CustomUser'
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
+    "https://*.trycloudflare.com",
 ]
+
+#optional for cloudflare headers
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.trycloudflare.com',
+]
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_HTTPONLY = False
+
+
 
 
 LANGUAGE_CODE = 'en-ke'
