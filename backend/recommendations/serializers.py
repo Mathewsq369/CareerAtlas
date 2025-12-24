@@ -1,30 +1,27 @@
 from rest_framework import serializers
-from .models import Career, Subject, CareerPersonalityMatch, LearningStyle, StudentRecommendation
+from .models import Career, Subject, StudentRecommendation, LearningStyle
+from assessments.models import PersonalityType
 
 class SubjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Subject
         fields = ['id', 'name', 'code', 'category', 'difficulty_level']
 
-class CareerPersonalityMatchSerializer(serializers.ModelSerializer):
-    personality_type_name = serializers.CharField(source='personality_type.name', read_only=True)
-    personality_type_code = serializers.CharField(source='personality_type.mbti_type', read_only=True)
-    
+class PersonalityTypeSerializer(serializers.ModelSerializer):
     class Meta:
-        model = CareerPersonalityMatch
-        fields = ['id', 'personality_type', 'personality_type_name', 'personality_type_code', 'compatibility_score', 'reasoning']
+        model = PersonalityType
+        fields = ['id', 'mbti_type', 'name', 'description']
 
 class CareerSerializer(serializers.ModelSerializer):
     required_subjects = SubjectSerializer(many=True, read_only=True)
     recommended_subjects = SubjectSerializer(many=True, read_only=True)
-    personality_matches = CareerPersonalityMatchSerializer(many=True, read_only=True)
     
     class Meta:
         model = Career
         fields = [
-            'id', 'name', 'description', 'category', 'required_subjects',
-            'recommended_subjects', 'personality_matches', 'average_salary',
-            'job_outlook', 'kenyan_market_demand'
+            'id', 'name', 'description', 'category', 
+            'required_subjects', 'recommended_subjects',
+            'average_salary', 'job_outlook', 'kenyan_market_demand'
         ]
 
 class LearningStyleSerializer(serializers.ModelSerializer):
@@ -39,12 +36,13 @@ class StudentRecommendationSerializer(serializers.ModelSerializer):
     class Meta:
         model = StudentRecommendation
         fields = [
-            'id', 'student', 'career', 'personality_match_score',
+            'id', 'career', 'personality_match_score',
             'academic_match_score', 'overall_score', 'reasoning',
             'recommended_subjects', 'created_at'
         ]
 
 class CareerRecommendationSerializer(serializers.Serializer):
+    """Serializer for generated recommendations (not saved)"""
     career = CareerSerializer()
     personality_match_score = serializers.DecimalField(max_digits=3, decimal_places=2)
     academic_match_score = serializers.DecimalField(max_digits=3, decimal_places=2)

@@ -3,7 +3,10 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic import TemplateView
+from django.views.generic import TemplateView, ListView, DetailView
+from django.shortcuts import get_object_or_404
+from django.db.models import Q
+from django.http import JsonResponse
 
 from .models import Career, Subject, StudentRecommendation, LearningStyle
 from .serializers import (
@@ -11,11 +14,12 @@ from .serializers import (
     LearningStyleSerializer, CareerRecommendationSerializer
 )
 from .services import RecommendationEngine, SubjectRecommender
+from users.models import StudentProfile
 
 class CareerViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = CareerSerializer
     queryset = Career.objects.prefetch_related(
-        'required_subjects', 'recommended_subjects', 'personality_matches'
+        'required_subjects', 'recommended_subjects'
     ).all()
     
     @action(detail=False, methods=['get'])
@@ -69,45 +73,115 @@ class LearningStyleViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = LearningStyle.objects.all()
     pagination_class = None
 
-# Template Views
-class RecommendationsView(LoginRequiredMixin, TemplateView):
-    template_name = 'recommendations/careers.html'
+# ==================== TEMPLATE VIEWS ====================
+
+class CareerRecommendationsView(LoginRequiredMixin, TemplateView):
+    """View to display personalized career recommendations"""
+    template_name = 'recommendations/career_recommendations.html'
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         student_profile = self.request.user.studentprofile
         
-        # Get recommendations
+        # Generate recommendations if they don't exist
         recommendations = StudentRecommendation.objects.filter(
             student=student_profile
-        ).select_related('career').prefetch_related('recommended_subjects')[:10]
+        ).select_related('career').prefetch_related('recommended_subjects').order_by('-overall_score')
         
-        context['recommendations'] = recommendations
+        if not recommendations.exists():
+            try:
+                assessment_result = student_profile.assessmentresult
+                engine = RecommendationEngine(student_profile)
+                recommendations_data = engine.generate_career_recommendations(top_n=10)
+                # Get the saved recommendations
+                recommendations = StudentRecommendation.objects.filter(
+                    student=student_profile
+                ).select_related('career').prefetch_related('recommended_subjects').order_by('-overall_score')
+            except:
+                recommendations = StudentRecommendation.objects.none()
         
-        # Get learning style
-        from ai_coach.services import AICoachService
+        # Get subject recommendations
         try:
-            coach = AICoachService(student_profile)
-            learning_style = coach.get_learning_style_recommendation()
-            context['learning_style'] = learning_style
+            subject_recommender = SubjectRecommender(student_profile)
+            recommended_subjects = subject_recommender.recommend_subjects()
         except:
-            context['learning_style'] = None
+            recommended_subjects = []
         
+        context.update({
+            'recommendations': recommendations,
+            'recommended_subjects': recommended_subjects,
+            'student': student_profile,
+        })
         return context
 
-class CareerDetailView(LoginRequiredMixin, TemplateView):
+class CareerDetailView(LoginRequiredMixin, DetailView):
+    """View to display detailed information about a specific career"""
+    model = Career
     template_name = 'recommendations/career_detail.html'
+    context_object_name = 'career'
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        career_id = self.kwargs.get('pk')
+        student = self.request.user.studentprofile
         
+        # Check if this career is recommended for the student
         try:
-            career = Career.objects.prefetch_related(
-                'required_subjects', 'recommended_subjects', 'personality_matches'
-            ).get(id=career_id)
-            context['career'] = career
-        except Career.DoesNotExist:
-            context['career'] = None
+            recommendation = StudentRecommendation.objects.get(
+                student=student,
+                career=self.object
+            )
+            context['recommendation'] = recommendation
+        except StudentRecommendation.DoesNotExist:
+            context['recommendation'] = None
         
+        # Get related careers
+        related_careers = Career.objects.filter(
+            Q(category=self.object.category) | 
+            Q(required_subjects__in=self.object.required_subjects.all())
+        ).distinct().exclude(id=self.object.id)[:5]
+        
+        context['related_careers'] = related_careers
+        context['student'] = student
         return context
+
+class CareerListView(LoginRequiredMixin, ListView):
+    """View to browse all available careers"""
+    model = Career
+    template_name = 'recommendations/career_list.html'
+    context_object_name = 'careers'
+    paginate_by = 20
+    
+    def get_queryset(self):
+        queryset = super().get_queryset().prefetch_related('required_subjects', 'recommended_subjects')
+        
+        # Apply filters
+        category = self.request.GET.get('category')
+        if category:
+            queryset = queryset.filter(category=category)
+        
+        demand = self.request.GET.get('demand')
+        if demand:
+            queryset = queryset.filter(kenyan_market_demand=demand)
+        
+        search = self.request.GET.get('search')
+        if search:
+            queryset = queryset.filter(
+                Q(name__icontains=search) | 
+                Q(description__icontains=search)
+            )
+        
+        return queryset.order_by('name')
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['categories'] = Career.objects.values_list('category', flat=True).distinct()
+        return context
+
+class SubjectListView(LoginRequiredMixin, ListView):
+    """View to browse available subjects"""
+    model = Subject
+    template_name = 'recommendations/subject_list.html'
+    context_object_name = 'subjects'
+    
+    def get_queryset(self):
+        return Subject.objects.all().order_by('name')
