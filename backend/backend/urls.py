@@ -6,9 +6,9 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', RedirectView.as_view(pattern_name='dashboard'), name='home'),
+    path('', RedirectView.as_view(pattern_name='users:dashboard'), name='home'),
     path('users/', include('users.urls')),
-    path('assessments/', include('assessments.urls', namespace='assessments')),
+    path('assessments/', include('assessments.urls')),
     path('recommendations/', include('recommendations.urls')),
     path('ai-coach/', include('ai_coach.urls')),
 ]
