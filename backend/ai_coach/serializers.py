@@ -1,24 +1,26 @@
 from rest_framework import serializers
 from .models import Conversation, Message, CoachingPlan, ResourceRecommendation
+from users.models import StudentProfile
+from assessments.models import PersonalityType
+from recommendations.models import LearningStyle
 
 class MessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Message
         fields = ['id', 'content', 'is_from_ai', 'timestamp']
+        read_only_fields = ['is_from_ai', 'timestamp']
 
 class ConversationSerializer(serializers.ModelSerializer):
     messages = MessageSerializer(many=True, read_only=True)
-    last_message = serializers.SerializerMethodField()
     
     class Meta:
         model = Conversation
-        fields = ['id', 'title', 'created_at', 'updated_at', 'messages', 'last_message']
-    
-    def get_last_message(self, obj):
-        last_message = obj.messages.last()
-        if last_message:
-            return MessageSerializer(last_message).data
-        return None
+        fields = ['id', 'title', 'student', 'messages', 'created_at', 'updated_at']
+        read_only_fields = ['student', 'created_at', 'updated_at']
+
+class ChatMessageSerializer(serializers.Serializer):
+    """Serializer for chat message input"""
+    message = serializers.CharField(max_length=1000)
 
 class ResourceRecommendationSerializer(serializers.ModelSerializer):
     class Meta:
@@ -26,18 +28,13 @@ class ResourceRecommendationSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'description', 'url', 'resource_type', 'relevance_score']
 
 class CoachingPlanSerializer(serializers.ModelSerializer):
-    learning_style_name = serializers.CharField(source='learning_style.name', read_only=True)
-    personality_type_name = serializers.CharField(source='personality_type.name', read_only=True)
+    personality_type = serializers.StringRelatedField()
+    learning_style = serializers.StringRelatedField()
     resources = ResourceRecommendationSerializer(many=True, read_only=True)
     
     class Meta:
         model = CoachingPlan
         fields = [
-            'id', 'student', 'personality_type', 'personality_type_name',
-            'learning_style', 'learning_style_name', 'goals', 'challenges',
-            'resources', 'created_at'
+            'id', 'personality_type', 'learning_style', 
+            'goals', 'challenges', 'resources', 'created_at'
         ]
-
-class ChatMessageSerializer(serializers.Serializer):
-    message = serializers.CharField()
-    conversation_id = serializers.IntegerField(required=False)
