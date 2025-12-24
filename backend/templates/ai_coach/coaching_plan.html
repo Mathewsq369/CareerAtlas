@@ -1,0 +1,316 @@
+{% extends 'base.html' %}
+
+{% block title %}My Coaching Plan - AI Career Coach{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-800 mb-2">My Coaching Plan</h1>
+        <p class="text-gray-600">Personalized learning and development plan based on your assessment</p>
+    </div>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Main Content -->
+        <div class="lg:col-span-2">
+            <!-- Profile Summary -->
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">Profile Summary</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <div class="text-sm text-gray-500 mb-1">Personality Type</div>
+                        {% if coaching_plan.personality_type %}
+                        <div class="text-2xl font-bold text-blue-600">
+                            {{ coaching_plan.personality_type.mbti_type }}
+                        </div>
+                        <div class="text-gray-700">{{ coaching_plan.personality_type.name }}</div>
+                        {% else %}
+                        <div class="text-lg text-gray-500">Not determined yet</div>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <div class="text-sm text-gray-500 mb-1">Recommended Learning Style</div>
+                        {% if coaching_plan.learning_style %}
+                        <div class="text-2xl font-bold text-green-600">
+                            {{ coaching_plan.learning_style.name|title }}
+                        </div>
+                        <div class="text-gray-700">{{ coaching_plan.learning_style.description }}</div>
+                        {% else %}
+                        <div class="text-lg text-gray-500">Not determined yet</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Goals Section -->
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-semibold text-gray-800">My Goals</h2>
+                    <button onclick="editGoals()" 
+                            class="text-sm text-blue-600 hover:text-blue-800 font-medium">
+                        Edit Goals
+                    </button>
+                </div>
+                
+                <div id="goals-display">
+                    {% if coaching_plan.goals %}
+                        <div class="space-y-4">
+                            {% for key, value in coaching_plan.goals.items %}
+                            <div class="flex items-start">
+                                <div class="p-2 bg-blue-100 rounded-lg mr-3">
+                                    <i class="fas fa-bullseye text-blue-600"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="font-medium text-gray-800">{{ key|title }}</div>
+                                    <div class="text-gray-600 mt-1">{{ value }}</div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-8">
+                            <p class="text-gray-600 mb-4">No goals set yet. Start by defining your career and academic goals.</p>
+                            <button onclick="editGoals()" 
+                                    class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                                Set Your Goals
+                            </button>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Goals Editor (hidden by default) -->
+                <div id="goals-editor" class="hidden">
+                    <form id="goals-form">
+                        {% csrf_token %}
+                        <div id="goals-fields" class="space-y-4">
+                            <!-- Goals will be added dynamically -->
+                        </div>
+                        <div class="mt-6 flex space-x-3">
+                            <button type="button" onclick="addGoalField()" 
+                                    class="px-4 py-2 bg-gray-100 text-gray-800 rounded-lg hover:bg-gray-200">
+                                Add Another Goal
+                            </button>
+                            <button type="submit" 
+                                    class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                                Save Goals
+                            </button>
+                            <button type="button" onclick="cancelEditGoals()" 
+                                    class="px-4 py-2 bg-gray-100 text-gray-800 rounded-lg hover:bg-gray-200">
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Study Recommendations -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">Study Recommendations</h2>
+                {% if coaching_plan.learning_style %}
+                <div class="bg-green-50 border border-green-200 rounded-lg p-6">
+                    <h3 class="font-semibold text-green-800 mb-2">As a {{ coaching_plan.learning_style.name|title }} Learner:</h3>
+                    <p class="text-green-700">{{ coaching_plan.learning_style.study_recommendations }}</p>
+                    
+                    <div class="mt-6">
+                        <h4 class="font-medium text-green-800 mb-2">Quick Tips:</h4>
+                        <ul class="space-y-2 text-green-700">
+                            {% if coaching_plan.learning_style.name == 'visual' %}
+                            <li class="flex items-center">
+                                <i class="fas fa-check-circle mr-2"></i> Use mind maps and diagrams
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fas fa-check-circle mr-2"></i> Color-code your notes
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fas fa-check-circle mr-2"></i> Watch educational videos
+                            </li>
+                            {% elif coaching_plan.learning_style.name == 'auditory' %}
+                            <li class="flex items-center">
+                                <i class="fas fa-check-circle mr-2"></i> Record and listen to lectures
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fas fa-check-circle mr-2"></i> Participate in group discussions
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fas fa-check-circle mr-2"></i> Use rhymes or songs to remember
+                            </li>
+                            {% elif coaching_plan.learning_style.name == 'reading' %}
+                            <li class="flex items-center">
+                                <i class="fas fa-check-circle mr-2"></i> Take detailed written notes
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fas fa-check-circle mr-2"></i> Read textbooks thoroughly
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fas fa-check-circle mr-2"></i> Write summaries in your own words
+                            </li>
+                            {% else %}
+                            <li class="flex items-center">
+                                <i class="fas fa-check-circle mr-2"></i> Use hands-on activities
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fas fa-check-circle mr-2"></i> Take movement breaks
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fas fa-check-circle mr-2"></i> Create physical models
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
+                {% else %}
+                <div class="bg-gray-50 border border-gray-200 rounded-lg p-6 text-center">
+                    <p class="text-gray-600">Complete your personality assessment to get personalized study recommendations.</p>
+                    <a href="{% url 'assessments:start' %}" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 mt-4">
+                        Take Assessment
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="lg:col-span-1">
+            <!-- Quick Actions -->
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Quick Actions</h3>
+                <div class="space-y-3">
+                    <a href="{% url 'ai_coach:chat' %}" 
+                       class="block w-full text-center px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">
+                        Chat with AI Coach
+                    </a>
+                    <a href="{% url 'recommendations:my_recommendations' %}" 
+                       class="block w-full text-center px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium">
+                        View Career Recommendations
+                    </a>
+                    <a href="{% url 'ai_coach:learning_resources' %}" 
+                       class="block w-full text-center px-4 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-medium">
+                        Learning Resources
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Personality Insights -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Personality Insights</h3>
+                <div class="space-y-4">
+                    {% if coaching_plan.personality_type %}
+                    <div>
+                        <div class="text-sm text-gray-500 mb-1">Strengths</div>
+                        <p class="text-gray-700 text-sm">
+                            {{ coaching_plan.personality_type.strengths|truncatechars:100 }}
+                        </p>
+                    </div>
+                    <div>
+                        <div class="text-sm text-gray-500 mb-1">Career Recommendations</div>
+                        <p class="text-gray-700 text-sm">
+                            {{ coaching_plan.personality_type.career_recommendations|truncatechars:100 }}
+                        </p>
+                    </div>
+                    <div class="pt-4 border-t border-gray-200">
+                        <a href="{% url 'assessments:results' %}" 
+                           class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                            View Full Assessment Results →
+                        </a>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <p class="text-gray-600 text-sm">Complete your assessment to see personality insights</p>
+                        <a href="{% url 'assessments:start' %}" class="text-blue-600 hover:text-blue-800 text-sm font-medium mt-2 inline-block">
+                            Take Assessment →
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    let goalCount = 0;
+    
+    function editGoals() {
+        document.getElementById('goals-display').classList.add('hidden');
+        document.getElementById('goals-editor').classList.remove('hidden');
+        
+        const goalsForm = document.getElementById('goals-fields');
+        goalsForm.innerHTML = '';
+        
+        {% if coaching_plan.goals %}
+            {% for key, value in coaching_plan.goals.items %}
+                addGoalField('{{ key }}', '{{ value }}');
+            {% endfor %}
+        {% else %}
+            addGoalField();
+        {% endif %}
+    }
+    
+    function addGoalField(title = '', description = '') {
+        goalCount++;
+        const goalsForm = document.getElementById('goals-fields');
+        const field = document.createElement('div');
+        field.className = 'border border-gray-200 rounded-lg p-4';
+        field.innerHTML = `
+            <div class="mb-3">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Goal Title</label>
+                <input type="text" name="goal_titles[]" 
+                       value="${title}" 
+                       placeholder="e.g., Improve Mathematics"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Goal Description</label>
+                <textarea name="goal_descriptions[]" 
+                          placeholder="Describe your goal..."
+                          rows="2"
+                          class="w-full px-3 py-2 border border-gray-300 rounded-lg">${description}</textarea>
+            </div>
+        `;
+        goalsForm.appendChild(field);
+    }
+    
+    function cancelEditGoals() {
+        document.getElementById('goals-display').classList.remove('hidden');
+        document.getElementById('goals-editor').classList.add('hidden');
+    }
+    
+    // Handle goals form submission
+    document.getElementById('goals-form')?.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const goalTitles = formData.getAll('goal_titles[]');
+        const goalDescriptions = formData.getAll('goal_descriptions[]');
+        
+        const goals = {};
+        goalTitles.forEach((title, index) => {
+            if (title.trim()) {
+                goals[title.trim()] = goalDescriptions[index]?.trim() || '';
+            }
+        });
+        
+        try {
+            const response = await fetch('{% url "ai_coach:update_goals" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify({ goals: goals })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error saving goals: ' + data.error);
+            }
+        } catch (error) {
+            alert('Error saving goals. Please try again.');
+        }
+    });
+</script>
+{% endblock %}
+{% endblock %}
